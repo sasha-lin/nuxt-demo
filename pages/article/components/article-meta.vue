@@ -18,8 +18,19 @@
       >{{article.author.username}}</nuxt-link>
       <span class="date">{{article.createdAt | date('MMM DD,YYYY')}}</span>
     </div>
-    <!-- 不是自己的 -->
-    <span v-if="!isAuthor">
+    <span v-if="isAuthor">
+      <nuxt-link
+        :to="{name:'editor',params:{slug:article.slug}}"
+        exact
+        class="btn btn-sm btn-outline-secondary"
+      >
+        <i class="ion-edit"></i>&nbsp;Edit Article
+      </nuxt-link>
+      <button :disabled="article.deleteDisabled" class="btn btn-outline-danger btn-sm" @click.prevent="deleteArticle(article)">
+        <i class="ion-trash-a"></i>&nbsp;Delete Article
+      </button>
+    </span>
+    <span v-else>
       <button
         :disabled="article.followDisabled"
         @click="onFollow(article)"
@@ -46,18 +57,6 @@
         >({{article.favoritesCount}})</span>
       </button>
     </span>
-    <span v-else>
-      <nuxt-link
-        :to="{name:'editor',params:{slug:article.slug}}"
-        exact
-        class="btn btn-sm btn-outline-secondary"
-      >
-        <i class="ion-edit"></i>&nbsp;Edit Article
-      </nuxt-link>
-      <button :disabled="article.deleteDisabled" class="btn btn-outline-danger btn-sm" @click.prevent="deleteArticle(article)">
-        <i class="ion-trash-a"></i>&nbsp;Delete Article
-      </button>
-    </span>
   </div>
 </template>
 
@@ -81,7 +80,11 @@ export default {
     computed: {
     ...mapState(["user"]),
      isAuthor () {
-      return this.article.author.username === this.user?.username
+       if(this.user){
+          return this.article.author.username === this.user.username
+       }else{
+         return false
+       }
     }
   },
   data() {
