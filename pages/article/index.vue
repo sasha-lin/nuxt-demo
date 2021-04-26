@@ -1,20 +1,31 @@
+<!--
+ * @Author: your name
+ * @Date: 2020-06-22 00:31:26
+ * @LastEditTime: 2021-04-26 21:23:15
+ * @LastEditors: your name
+ * @Description: In User Settings Edit
+ * @FilePath: /nuxt-demo/pages/article/index.vue
+-->
 <template>
+<!-- 文章 -->
   <div class="article-page">
-
     <div class="banner">
       <div class="container">
-
-        <h1>{{ article.title }}</h1>
-
-        <article-meta :article="article" />
-
+        <h1>{{article.title}}</h1>
+       <article-meta :article="article" />
       </div>
     </div>
 
     <div class="container page">
-
       <div class="row article-content">
         <div class="col-md-12" v-html="article.body"></div>
+        <ul class="tag-list">
+          <li
+            class="tag-default tag-pill tag-outline"
+            v-for="tag in article.tagList"
+            :key="tag"
+          >{{tag}}</li>
+        </ul>
       </div>
 
       <hr />
@@ -24,52 +35,57 @@
       </div>
 
       <div class="row">
-
-        <div class="col-xs-12 col-md-8 offset-md-2">
-
-          <article-comments :article="article" />
-
-        </div>
-
+        <article-comments :article="article" :user="user" v-if="user"></article-comments>
       </div>
-
     </div>
-
   </div>
 </template>
-
 <script>
-import { getArticle } from '@/api/article'
-import MarkdownIt from 'markdown-it'
+import { getArticle } from "@/api/article.js";
+import { mapState } from "vuex";
+import MarkdownIt from "markdown-it";
 import ArticleMeta from './components/article-meta'
 import ArticleComments from './components/article-comments'
-
 export default {
-  name: 'ArticleIndex',
-  async asyncData ({ params }) {
-    const { data } = await getArticle(params.slug)
-    const { article } = data
-    const md = new MarkdownIt()
-    article.body = md.render(article.body)
-    return {
-      article
+  name: "ArticleIndx",
+  async asyncData({ params }) {
+    try {
+      const { data } = await getArticle(params.slug);
+      const { article } = data;
+      const md = new MarkdownIt();
+      article.body = md.render(article.body);
+      article.favoriteDisabled = false
+      article.followDisabled = false
+      article.deleteDisabled = false
+      return {
+        article,
+      };
+    } catch (err) {
+      console.log(err);
     }
   },
   components: {
     ArticleMeta,
     ArticleComments
   },
-  head () {
+  head() {
     return {
       title: `${this.article.title} - RealWorld`,
       meta: [
-        { hid: 'description', name: 'description', content: this.article.description }
-      ]
-    }
-  }
-}
+        {
+          hid: "description",//覆盖父组件大的meta
+          name: "description",
+          content: this.article.description,
+        },
+      ],
+    };
+  },
+  computed: {
+    ...mapState(["user"]),
+  },
+  methods: {}
+};
 </script>
 
-<style>
-
+<style scoped>
 </style>
